@@ -1,4 +1,4 @@
-# Loan Risk Assessment System
+# 🏦 Loan Risk Assessment System
 
 An end-to-end machine learning system for loan risk prediction. Given an applicant's financial profile, the system predicts whether a loan should be approved or rejected, estimates the interest rate, segments the borrower, and explains the decision in plain English.
 
@@ -44,21 +44,41 @@ loan-risk-system/
 ├── frontend/
 │   └── app.py                  # Streamlit UI
 ├── src/                        # ML training code
-├── models/                     # Trained models + pipelines
-├── models_onnx/                # ONNX production models
-├── data/                       # Dataset + engineered features
-├── tests/
-│   └── test_api.py             # API test suite
-├── docs/                       # Phase reports
-├── notebooks/                  # Development notebooks
+├── models/                     # Downloaded at runtime — see below
+├── models_onnx/                # Downloaded at runtime — see below
+├── data/                       # Downloaded at runtime — see below
 ├── Dockerfile.api
 ├── Dockerfile.frontend
 ├── docker-compose.yml
-├── .dockerignore
-├── requirements.txt
+├── download_models.py          # Downloads models from Hugging Face
 ├── requirements.api.txt
 └── requirements.frontend.txt
 ```
+
+> ⚠️ **Models and data are NOT included in this repository.**
+> They are stored on Hugging Face and downloaded automatically at startup.
+> See [Model Files](#model-files) section below.
+
+---
+
+## Model Files
+
+All trained models, pipelines, and data files are stored on Hugging Face:
+
+🤗 **[Abdulmoiz123/loan-risk-models](https://huggingface.co/Abdulmoiz123/loan-risk-models)**
+
+| File | Purpose |
+|------|---------|
+| `models_onnx/cls_LightGBM.onnx` | Classification ONNX model |
+| `models_onnx/reg_RandomForest.onnx` | Regression ONNX model |
+| `models_onnx/cluster_GMM.onnx` | Clustering ONNX model |
+| `models/Production_pipelines/*.joblib` | Preprocessing + FE pipelines |
+| `models/Final_Models/*.joblib` | Original models for SHAP |
+| `models/Project_Parameter_Files/feature_lists.json` | Feature column lists |
+| `data/engineered_data/X_train_cls_engineered.csv` | SHAP background data |
+| `data/engineered_data/X_train_reg_engineered.csv` | SHAP background data |
+
+These are downloaded automatically by `download_models.py` at startup.
 
 ---
 
@@ -66,6 +86,7 @@ loan-risk-system/
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| GET | `/` | API info |
 | GET | `/health` | API + model health status |
 | GET | `/stats` | Prediction statistics |
 | POST | `/predict/new` | New applicant — predicts rate + decision |
@@ -89,65 +110,123 @@ Classification → Clustering → SHAP → Plain Reasons
 
 ---
 
-## Quickstart — Docker
+## Quickstart — Docker (Recommended)
 
 ### Requirements
 - Docker Desktop installed and running
+- A Hugging Face read token from https://huggingface.co/settings/tokens
 
-### Run
+### Steps
+
+**1. Clone the repository**
 ```bash
-git clone https://github.com/Abdulmoiz123/loan-risk-system.git
+git clone https://github.com/moizishere-droid/loan-risk-system.git
 cd loan-risk-system
+```
+
+**2. Create `.env` file in project root**
+```env
+# Hugging Face
+HF_TOKEN=hf_your_token_here
+
+# PostgreSQL
+DB_HOST=db
+DB_PORT=5432
+DB_NAME=loan_risk_db
+DB_USER=postgres
+DB_PASSWORD=yourpassword
+```
+
+**3. Build and run**
+```bash
 docker-compose up --build
 ```
 
-### Access
+> First run will take a few minutes — models are downloaded from Hugging Face automatically.
+
+**4. Access**
+
 | Service | URL |
 |---------|-----|
 | Frontend | http://localhost:8501 |
 | API docs | http://localhost:8000/docs |
 
-### Stop
+**5. Stop**
 ```bash
 docker-compose down
 ```
 
 ---
 
-## Quickstart — Local
+## Quickstart — Local (Without Docker)
 
 ### Requirements
 - Python 3.11
-- PostgreSQL running locally
+- PostgreSQL installed and running
+- Hugging Face read token
 
-### Setup
+### Steps
+
+**1. Clone and setup**
 ```bash
-# Clone
-git clone https://github.com/Abdulmoiz123/loan-risk-system.git
+git clone https://github.com/moizishere-droid/loan-risk-system.git
 cd loan-risk-system
 
-# Create virtual environment
 python -m venv venv
-venv\Scripts\activate        # Windows
-source venv/bin/activate     # Mac/Linux
 
-# Install dependencies
-pip install -r requirements.txt
+# Windows
+venv\Scripts\activate
 
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your DB credentials
+# Mac/Linux
+source venv/bin/activate
+
+pip install -r requirements.api.txt
+pip install -r requirements.frontend.txt
+pip install huggingface_hub
 ```
 
-### Run
-```bash
-# Terminal 1 — API
-uvicorn api.main:app --reload
+**2. Create `.env` file in project root**
+```env
+# Hugging Face
+HF_TOKEN=hf_your_token_here
 
-# Terminal 2 — Frontend
+# PostgreSQL
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=loan_risk_db
+DB_USER=postgres
+DB_PASSWORD=yourpassword
+```
+
+**3. Create PostgreSQL database**
+```sql
+CREATE DATABASE loan_risk_db;
+```
+
+**4. Download models from Hugging Face**
+```bash
+python download_models.py
+```
+
+**5. Run the API**
+```bash
+# Terminal 1
+uvicorn api.main:app --reload
+```
+
+**6. Run the Frontend**
+```bash
+# Terminal 2
 cd frontend
 streamlit run app.py
 ```
+
+**7. Access**
+
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:8501 |
+| API docs | http://localhost:8000/docs |
 
 ---
 
@@ -173,7 +252,8 @@ Cascade deletes — removing an applicant removes all their predictions, inputs,
 | Regression | RandomForest | R² = 0.9077, RMSE = 0.9811 |
 | Clustering | GMM | Silhouette = 0.2196 |
 
-All models are exported to ONNX format for faster inference in production.
+All models exported to ONNX format for faster inference in production.
+SHAP explanations use original joblib models with TreeExplainer.
 
 ---
 
@@ -190,11 +270,12 @@ All models are exported to ONNX format for faster inference in production.
 
 | Layer | Technology |
 |-------|-----------|
-| ML | scikit-learn, LightGBM, SHAP, ONNX |
+| ML | scikit-learn, LightGBM, SHAP, ONNX Runtime |
 | API | FastAPI, Uvicorn, Pydantic |
 | Database | PostgreSQL, SQLAlchemy |
 | Frontend | Streamlit |
 | Containerization | Docker, Docker Compose |
+| Model Storage | Hugging Face Hub |
 | Tuning | Optuna |
 
 ---
@@ -221,7 +302,7 @@ All models are exported to ONNX format for faster inference in production.
 | 16 | API Development | ✅ |
 | 17 | Frontend | ✅ |
 | 18 | Testing | ✅ |
-| 19 | Docker | ✅ |
+| 19 | Deployment | ✅ |
 
 ---
 
