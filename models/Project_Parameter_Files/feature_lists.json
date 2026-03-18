@@ -1,0 +1,53 @@
+{
+    "classification": {
+        "features": [
+            "person_age",
+            "person_income",
+            "person_emp_length",
+            "loan_amnt",
+            "loan_int_rate",
+            "loan_percent_income",
+            "cb_person_default_on_file",
+            "person_home_ownership_MORTGAGE",
+            "person_home_ownership_OWN",
+            "person_home_ownership_RENT",
+            "loan_intent_DEBTCONSOLIDATION",
+            "loan_intent_EDUCATION",
+            "loan_intent_HOMEIMPROVEMENT",
+            "loan_intent_MEDICAL",
+            "loan_intent_PERSONAL",
+            "loan_intent_VENTURE",
+            "income_to_loan_ratio",
+            "loan_to_age_ratio",
+            "income_per_emp_year",
+            "loan_grade_x_loan_int_rate",
+            "loan_grade_x_loan_percent_income",
+            "person_age_x_person_emp_length",
+            "debt_burden_score"
+        ],
+        "n_features": 23,
+        "target": "loan_status"
+    },
+    "regression": {
+        "features": [
+            "person_age",
+            "person_income",
+            "person_emp_length",
+            "loan_grade",
+            "loan_amnt",
+            "loan_percent_income",
+            "person_home_ownership_MORTGAGE",
+            "person_home_ownership_OWN",
+            "person_home_ownership_RENT",
+            "income_to_loan_ratio",
+            "loan_to_age_ratio",
+            "income_per_emp_year",
+            "loan_grade_x_loan_amnt",
+            "loan_grade_x_loan_percent_income",
+            "person_age_x_person_emp_length",
+            "debt_burden_score"
+        ],
+        "n_features": 16,
+        "target": "loan_int_rate"
+    }
+}

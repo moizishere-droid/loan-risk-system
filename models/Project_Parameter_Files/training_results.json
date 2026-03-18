@@ -1,0 +1,213 @@
+{
+    "classification": {
+        "cv_results": {
+            "LogisticRegression": {
+                "accuracy_mean": 0.7875,
+                "accuracy_std": 0.0071,
+                "f1_mean": 0.6151,
+                "f1_std": 0.0104,
+                "roc_auc_mean": 0.863,
+                "roc_auc_std": 0.005,
+                "time": 0.54
+            },
+            "RandomForest": {
+                "accuracy_mean": 0.9277,
+                "accuracy_std": 0.0025,
+                "f1_mean": 0.8077,
+                "f1_std": 0.0072,
+                "roc_auc_mean": 0.9308,
+                "roc_auc_std": 0.0039,
+                "time": 14.98
+            },
+            "XGBoost": {
+                "accuracy_mean": 0.9282,
+                "accuracy_std": 0.0032,
+                "f1_mean": 0.8237,
+                "f1_std": 0.0077,
+                "roc_auc_mean": 0.9425,
+                "roc_auc_std": 0.0032,
+                "time": 1.55
+            },
+            "LightGBM": {
+                "accuracy_mean": 0.9195,
+                "accuracy_std": 0.0036,
+                "f1_mean": 0.81,
+                "f1_std": 0.0085,
+                "roc_auc_mean": 0.9438,
+                "roc_auc_std": 0.0033,
+                "time": 1.62
+            }
+        },
+        "val_results": {
+            "RandomForest": {
+                "accuracy": 0.9206219312602292,
+                "f1": 0.790948275862069,
+                "precision": 0.9291139240506329,
+                "recall": 0.6885553470919324,
+                "roc_auc": 0.9251465054198905
+            },
+            "XGBoost": {
+                "accuracy": 0.9263502454991817,
+                "f1": 0.8132780082987552,
+                "precision": 0.9095127610208816,
+                "recall": 0.7354596622889306,
+                "roc_auc": 0.9397376500029945
+            },
+            "LightGBM": {
+                "accuracy": 0.9218494271685761,
+                "f1": 0.8107036669970267,
+                "precision": 0.8592436974789915,
+                "recall": 0.7673545966228893,
+                "roc_auc": 0.9379213656887202
+            },
+            "LogisticRegression": {
+                "accuracy": 0.8019639934533551,
+                "f1": 0.6271186440677967,
+                "precision": 0.5320261437908497,
+                "recall": 0.7636022514071295,
+                "roc_auc": 0.8630079828150051
+            }
+        },
+        "best_params": {
+            "RandomForest": {
+                "n_estimators": 299,
+                "max_depth": 15,
+                "min_samples_split": 6,
+                "min_samples_leaf": 2,
+                "max_features": "log2"
+            },
+            "XGBoost": {
+                "n_estimators": 213,
+                "max_depth": 7,
+                "learning_rate": 0.12358921464824361,
+                "subsample": 0.9322809142547737,
+                "colsample_bytree": 0.8786846811421739
+            },
+            "LightGBM": {
+                "n_estimators": 235,
+                "max_depth": 7,
+                "learning_rate": 0.1745169142357489,
+                "num_leaves": 54,
+                "subsample": 0.8596985276023658
+            }
+        }
+    },
+    "regression": {
+        "cv_results": {
+            "LinearRegression": {
+                "r2_mean": 0.8757,
+                "r2_std": 0.0026,
+                "rmse_mean": 1.1394,
+                "rmse_std": 0.0112,
+                "mae_mean": 0.8913,
+                "mae_std": 0.0079,
+                "time": 0.18
+            },
+            "RandomForest": {
+                "r2_mean": 0.9058,
+                "r2_std": 0.0026,
+                "rmse_mean": 0.992,
+                "rmse_std": 0.0121,
+                "mae_mean": 0.7596,
+                "mae_std": 0.0082,
+                "time": 108.8
+            },
+            "XGBoost": {
+                "r2_mean": 0.9014,
+                "r2_std": 0.0024,
+                "rmse_mean": 1.0147,
+                "rmse_std": 0.0104,
+                "mae_mean": 0.7926,
+                "mae_std": 0.008,
+                "time": 1.34
+            },
+            "LightGBM": {
+                "r2_mean": 0.905,
+                "r2_std": 0.0022,
+                "rmse_mean": 0.996,
+                "rmse_std": 0.0099,
+                "mae_mean": 0.7825,
+                "mae_std": 0.0073,
+                "time": 0.85
+            }
+        },
+        "val_results": {
+            "RandomForest": {
+                "r2": 0.9136701365599973,
+                "rmse": 0.9842392820892255,
+                "mae": 0.7828636362229455
+            },
+            "XGBoost": {
+                "r2": 0.9123138740989793,
+                "rmse": 0.99194046841572,
+                "mae": 0.7906492958672985
+            },
+            "LightGBM": {
+                "r2": 0.9115479081133692,
+                "rmse": 0.996263504707596,
+                "mae": 0.7939208434513633
+            },
+            "LinearRegression": {
+                "r2": 0.8826327587086026,
+                "rmse": 1.1476081282083153,
+                "mae": 0.9045309580513794
+            }
+        },
+        "best_params": {
+            "RandomForest": {
+                "n_estimators": 205,
+                "max_depth": 15,
+                "min_samples_split": 7,
+                "min_samples_leaf": 1,
+                "max_features": "sqrt"
+            },
+            "XGBoost": {
+                "n_estimators": 176,
+                "max_depth": 7,
+                "learning_rate": 0.037063929310718925,
+                "subsample": 0.7437922067606186,
+                "colsample_bytree": 0.8350746997147329
+            },
+            "LightGBM": {
+                "n_estimators": 146,
+                "max_depth": 6,
+                "learning_rate": 0.05851144157636089,
+                "num_leaves": 73,
+                "subsample": 0.7232192344691581
+            }
+        }
+    },
+    "clustering": {
+        "val_results": {
+            "KMeans": {
+                "silhouette": 0.1650532957740047,
+                "davies_bouldin": 2.8307794562334005,
+                "calinski_harabasz": 238.1061167366495,
+                "n_clusters": 2,
+                "time": 0.31
+            },
+            "GMM": {
+                "silhouette": 0.22869560154408608,
+                "davies_bouldin": 4.221362722137762,
+                "calinski_harabasz": 115.76509446131699,
+                "n_clusters": 2,
+                "time": 0.11
+            }
+        },
+        "best_params": {
+            "KMeans": {
+                "n_clusters": 2,
+                "init": "random",
+                "n_init": 30
+            },
+            "GMM": {
+                "n_components": 2,
+                "covariance_type": "spherical"
+            },
+            "Hierarchical": {
+                "n_clusters": 3,
+                "linkage": "ward"
+            }
+        }
+    }
+}

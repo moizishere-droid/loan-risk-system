@@ -1,0 +1,39 @@
+{
+    "classification": {
+        "model_name": "cls_LightGBM",
+        "model_file": "cls_LightGBM.joblib",
+        "threshold": 0.6,
+        "metrics": {
+            "test_f1": 0.839,
+            "test_auc": 0.9471,
+            "test_accuracy": 0.9358,
+            "test_recall": 0.7674,
+            "test_precision": 0.9253
+        },
+        "reason": "Wins 7/10 metrics. Higher recall critical for loan risk."
+    },
+    "regression": {
+        "model_name": "reg_RandomForest",
+        "model_file": "reg_RandomForest.joblib",
+        "metrics": {
+            "test_r2": 0.9077,
+            "test_rmse": 0.9811,
+            "test_mae": 0.7697
+        },
+        "reason": "Wins all 6/6 metrics. No debate."
+    },
+    "clustering": {
+        "model_name": "cluster_GMM",
+        "model_file": "cluster_GMM.joblib",
+        "metrics": {
+            "test_silhouette": 0.2196,
+            "test_davies_bouldin": 4.3057,
+            "test_calinski_harabasz": 118.08
+        },
+        "cluster_labels": {
+            "0": "High Value Borrower",
+            "1": "Standard Borrower"
+        },
+        "reason": "Best silhouette + soft probabilities for production."
+    }
+}

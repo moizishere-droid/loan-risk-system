@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "loan-risk-assessment"
+version = "0.1.0"
+description = "End-to-End Loan Risk Assessment System"
+authors = [
+    { name = "Abdul Moiz" }
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]

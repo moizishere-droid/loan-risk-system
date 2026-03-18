@@ -1,0 +1,20 @@
+How to start Docker
+bash
+docker-compose up
+No --build needed unless you changed code. Just up.
+
+
+To stop Docker:
+bash# Ctrl+C  — if running in foreground
+# Or if running in background
+docker-compose down
+
+
+Never run docker-compose down -v 
+unless you want to completely reset the database. 
+Just docker-compose down is always safe.
+
+
+Quick rule:
+Changed code → docker-compose up --build
+No changes → docker-compose up

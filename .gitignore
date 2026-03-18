@@ -1,0 +1,172 @@
+# LOAN RISK ASSESSMENT SYSTEM - .gitignore
+# Optimized for Render deployment
+
+
+# ==================================================
+# PYTHON
+# ==================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+
+# ==================================================
+# VIRTUAL ENVIRONMENT
+# ==================================================
+venv/
+.venv/
+env/
+
+
+# ==================================================
+# DISTRIBUTION / PACKAGING
+# ==================================================
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+
+# ==================================================
+# DATA FILES — never commit data
+# ==================================================
+data/raw_data/*
+data/processed_data/*
+data/engineered_data/*
+data/splits/*
+*.csv
+*.xlsx
+*.xls
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+
+# Keep directory structure
+!data/raw_data/.gitkeep
+!data/processed_data/.gitkeep
+!data/engineered_data/.gitkeep
+!data/splits/.gitkeep
+
+
+# ==================================================
+# MODELS — never commit large model files
+# ==================================================
+models/Final_Models/*.joblib
+models/Production_pipelines/*.joblib
+models_onnx/*.onnx
+
+# Keep structure
+!models/.gitkeep
+!models_onnx/.gitkeep
+
+
+# ==================================================
+# NOT NEEDED FOR DEPLOYMENT
+# ==================================================
+
+# Notebooks — development only
+notebooks/
+
+# Tests — not needed on Render
+tests/
+
+# Docs — not needed on Render
+docs/
+
+# Logs
+logs/
+*.log
+!logs/.gitkeep
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# Resave script — dev only
+resave_pipelines.py
+
+
+# ==================================================
+# ENVIRONMENT & SECRETS
+# ==================================================
+.env
+.env.local
+.env.*.local
+*.env
+secrets/
+*.pem
+*.key
+*.crt
+
+
+# ==================================================
+# JUPYTER
+# ==================================================
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+
+# ==================================================
+# IDE
+# ==================================================
+.vscode/*
+!.vscode/settings.json
+.idea/
+*.iml
+*.code-workspace
+
+
+# ==================================================
+# OS
+# ==================================================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+
+# ==================================================
+# TESTING
+# ==================================================
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.cover
+
+
+# ==================================================
+# DATABASE
+# ==================================================
+*.db
+*.sqlite
+*.sqlite3
+
+
+# ==================================================
+# DOCKER & MISC
+# ==================================================
+*.tar
+*.zip
+*.tmp
+*.bak
+*.swp
+*.swo
+*~

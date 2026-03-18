@@ -1,0 +1,44 @@
+# .dockerignore — Loan Risk Assessment System
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+.env/
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+notebooks/
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+
+# Tests
+tests/
+
+# Docs
+docs/
+
+# Data — raw and processed (keep engineered only)
+data/raw/
+data/splits/
+data/processed_data/

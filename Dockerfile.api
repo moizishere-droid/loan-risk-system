@@ -1,0 +1,43 @@
+# Dockerfile.api — Loan Risk Assessment System
+# FastAPI + Uvicorn
+
+# Base image — Python 3.11 slim
+FROM python:3.11-slim-bookworm
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update -o Acquire::Check-Valid-Until=false && apt-get install -y \
+    gcc \
+    g++ \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first (for Docker layer caching)
+COPY requirements.api.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.api.txt
+
+# Install huggingface_hub for model download
+RUN pip install --no-cache-dir huggingface_hub
+
+# Copy source code only — no model files
+COPY api/ ./api/
+COPY database/ ./database/
+COPY src/ ./src/
+COPY download_models.py .
+
+# Create empty directories — will be filled at startup
+RUN mkdir -p models_onnx \
+             models/Production_pipelines \
+             models/Final_Models \
+             models/Project_Parameter_Files \
+             data/engineered_data
+
+# Expose port
+EXPOSE 8000
+
+# Run download script then start API
+CMD python download_models.py && uvicorn api.main:app --host 0.0.0.0 --port 8000

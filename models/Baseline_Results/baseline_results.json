@@ -1,0 +1,71 @@
+{
+    "classification": {
+        "DummyClassifier": {
+            "accuracy": 0.7819148936170213,
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "roc_auc": 0.5,
+            "train_time": 0.0363
+        },
+        "LogisticRegression": {
+            "accuracy": 0.8019639934533551,
+            "f1": 0.6271186440677967,
+            "precision": 0.5320261437908497,
+            "recall": 0.7636022514071295,
+            "roc_auc": 0.8630079828150051,
+            "train_time": 0.1256
+        },
+        "DecisionTreeClassifier": {
+            "accuracy": 0.8764320785597381,
+            "f1": 0.7118320610687022,
+            "precision": 0.7242718446601941,
+            "recall": 0.699812382739212,
+            "roc_auc": 0.870268702083229,
+            "train_time": 0.2741
+        }
+    },
+    "regression": {
+        "DummyRegressor": {
+            "r2": -0.00043336110073766143,
+            "rmse": 3.3505357025560203,
+            "mae": 2.800183154606076,
+            "train_time": 0.007
+        },
+        "LinearRegression": {
+            "r2": 0.8826327587086026,
+            "rmse": 1.1476081282083153,
+            "mae": 0.9045309580513794,
+            "train_time": 0.1003
+        },
+        "DecisionTreeRegressor": {
+            "r2": 0.9095790687259651,
+            "rmse": 1.0072903076162703,
+            "mae": 0.8021892341741103,
+            "train_time": 0.298
+        }
+    },
+    "clustering": {
+        "KMeans": {
+            "silhouette": 0.1478558473417366,
+            "davies_bouldin": 2.3774538610575298,
+            "calinski_harabasz": 2480.867570568778,
+            "n_clusters": 3,
+            "train_time": 20.0142
+        },
+        "DBSCAN": {
+            "silhouette": -0.4250676213697093,
+            "davies_bouldin": 1.7363101568117665,
+            "calinski_harabasz": 4.074999485547203,
+            "n_clusters": 102,
+            "train_time": 14.9113
+        },
+        "AgglomerativeClustering": {
+            "silhouette": 0.15532336950490705,
+            "davies_bouldin": 2.46864117947787,
+            "calinski_harabasz": 1910.2080737000429,
+            "n_clusters": 3,
+            "train_time": 59.15
+        }
+    }
+}

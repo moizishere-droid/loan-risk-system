@@ -1,0 +1,215 @@
+# LOAN RISK ASSESSMENT SYSTEM - PROJECT CONFIGURATION
+
+# PROJECT INFO
+project:
+  name: "Loan Risk Assessment System"
+  version: "1.0.0"
+  author: "Abdul Moiz"
+  description: "End-to-End ML system for loan approval, credit risk scoring, and customer segmentation"
+  python_version: "3.11.9"
+
+# PATHS
+paths:
+  # Data
+  raw_data: "data/raw_data/credit_risk_dataset.csv"
+  processed_data: "data/processed_data/"
+  splits_data: "data/splits/"
+  engineered_data: "data/engineered_data/"
+
+  # Models
+  final_models_dir: "models/Final_Models/"
+  base_models_dir: "models/Baseline_Results/"
+  notebook_pipeline_dir: "models/Notebook_pipelines/"
+  final_pipeline_dir: "models/Production_pipelines/"
+  final_para_dir: "models/Project_Parameter_Files/"
+  models_onnx_dir: "models_onnx/"
+
+  # Logs
+  logs_dir: "logs/"
+
+  # Reports
+  reports_dir: "docs/"
+
+# DATA
+data:
+  filename: "credit_risk_dataset.csv"
+  target_classification: "loan_status"
+  target_regression: "loan_int_rate"
+  random_state: 42
+
+  # Column types
+  numerical_features:
+    - "person_age"
+    - "person_income"
+    - "person_emp_length"
+    - "loan_amnt"
+    - "loan_int_rate"
+    - "loan_percent_income"
+    - "cb_person_cred_hist_length"
+
+  categorical_features:
+    - "person_home_ownership"
+    - "loan_intent"
+    - "loan_grade"
+    - "cb_person_default_on_file"
+
+  ordinal_features:
+    - "loan_grade"
+
+  ordinal_order:
+    loan_grade: ["A", "B", "C", "D", "E", "F", "G"]
+
+  # Splitting
+  split:
+    train_size: 0.70
+    test_size: 0.15
+    val_size: 0.15
+    stratify: true
+
+# PREPROCESSING
+preprocessing:
+  missing_values:
+    numerical_strategy: "median"
+    categorical_strategy: "mode"
+
+  outliers:
+    method: "iqr"
+    threshold: 1.5
+
+  scaling:
+    method: "standard"          # standard, minmax, robust
+
+  encoding:
+    nominal: "onehot"
+    ordinal: "ordinal"
+
+# MODELS
+models:
+  # Classification - Loan Approval
+  classification:
+    target: "loan_status"
+    models_to_train:
+      - "logistic_regression"
+      - "decision_tree"
+      - "random_forest"
+      - "xgboost"
+      - "lightgbm"
+    primary_metric: "roc_auc"
+    cv_folds: 5
+    handle_imbalance: true
+    imbalance_method: "class_weight"   # smote, class_weight
+
+  # Regression - Credit Risk Score
+  regression:
+    target: "loan_int_rate"
+    models_to_train:
+      - "linear_regression"
+      - "decision_tree"
+      - "random_forest"
+      - "xgboost"
+      - "lightgbm"
+    primary_metric: "rmse"
+    cv_folds: 5
+
+  # Clustering - Customer Segmentation
+  clustering:
+    models_to_train:
+      - "kmeans"
+      - "hierarchical"
+      - "gmm"
+    max_clusters: 10
+    primary_metric: "silhouette_score"
+
+# HYPERPARAMETER TUNING (OPTUNA)
+tuning:
+  n_trials: 50
+  timeout: 3600                  # seconds
+  direction: "maximize"         # maximize or minimize
+  random_state: 42
+
+# EXPERIMENT TRACKING (MLFLOW)
+mlflow:
+  experiment_name: "loan-risk-assessment"
+  tracking_uri: "mlruns/"
+  run_name: "baseline_run"
+  log_models: true
+  log_artifacts: true
+
+# EXPLAINABILITY
+explainability:
+  shap:
+    enabled: true
+    max_samples: 100
+
+# MODEL SAVING
+saving:
+  format:
+    - "joblib"
+    - "onnx"
+  versioning: true
+
+# DATABASE
+database:
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "loan_risk_db"
+    username: "${DB_USER}"       # loaded from .env
+    password: "${DB_PASSWORD}"   # loaded from .env
+
+  mongodb:
+    host: "localhost"
+    port: 27017
+    database: "loan_risk_logs"
+    username: "${MONGO_USER}"    # loaded from .env
+    password: "${MONGO_PASSWORD}" # loaded from .env
+
+# API (FASTAPI)
+api:
+  host: "0.0.0.0"
+  port: 8000
+  version: "v1"
+  prefix: "/api/v1"
+  debug: false
+  endpoints:
+    - "/predict/approval"
+    - "/predict/credit-score"
+    - "/predict/segment"
+    - "/predict/decision"
+    - "/health"
+    - "/model/info"
+
+# UI (STREAMLIT)
+streamlit:
+  host: "0.0.0.0"
+  port: 8501
+  title: "Loan Risk Assessment Dashboard"
+
+# MONITORING & LOGGING
+logging:
+  level: "INFO"                 # DEBUG, INFO, WARNING, ERROR
+  log_file: "logs/app.log"
+  format: "json"
+  rotation: "10 MB"
+  retention: "30 days"
+
+monitoring:
+  prometheus:
+    enabled: true
+    port: 9090
+  track_predictions: true
+  track_drift: true
+  alert_threshold: 0.10         # 10% drift triggers alert
+
+# TESTING
+testing:
+  test_dir: "src/test/"
+  coverage_threshold: 80        # minimum 80% code coverage
+
+# DOCKER
+docker:
+  image_name: "loan-risk-system"
+  tag: "1.0.0"
+  api_port: 8000
+  streamlit_port: 8501
+  prometheus_port: 9090
