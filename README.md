@@ -201,7 +201,8 @@ SHAP explanations use original joblib models with TreeExplainer.
 | 16 | API Development | ✅ |
 | 17 | Frontend | ✅ |
 | 18 | Testing | ✅ |
-| 19 | Deployment | ✅ |
+| 19 | Docker | ✅ |
+| 20 | Deployment | ✅ |
 
 ---
 
