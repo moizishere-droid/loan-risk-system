@@ -1,0 +1,32 @@
+# Dockerfile — HF Spaces deployment
+# FastAPI + Uvicorn
+
+FROM python:3.11-slim-bookworm
+
+WORKDIR /app
+
+RUN apt-get update -o Acquire::Check-Valid-Until=false && apt-get install -y \
+    gcc \
+    g++ \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.api.txt .
+
+RUN pip install --no-cache-dir -r requirements.api.txt
+RUN pip install --no-cache-dir huggingface_hub
+
+COPY api/ ./api/
+COPY database/ ./database/
+COPY src/ ./src/
+COPY download_models.py .
+
+RUN mkdir -p models_onnx \
+             models/Production_pipelines \
+             models/Final_Models \
+             models/Project_Parameter_Files \
+             data/engineered_data
+
+EXPOSE 7860
+
+CMD python download_models.py && uvicorn api.main:app --host 0.0.0.0 --port 7860
