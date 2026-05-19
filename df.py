@@ -1,6 +1,7 @@
 from huggingface_hub import HfApi
 
-api = HfApi(token="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")
+import os
+api = HfApi(token=os.getenv("HF_TOKEN"))
 
 repo_id = "Abdulmoiz123/loan-risk-models"
 
