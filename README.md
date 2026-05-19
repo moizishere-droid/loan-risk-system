@@ -128,46 +128,6 @@ docker-compose down
 
 ---
 
-## Quickstart — Local
-
-**1. Clone and setup**
-```bash
-git clone https://github.com/moizishere-droid/loan-risk-system.git
-cd loan-risk-system
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.api.txt
-pip install -r requirements.frontend.txt
-```
-
-**2. Create `.env` file**
-```env
-HF_TOKEN=hf_your_token_here
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=loan_risk_db
-DB_USER=postgres
-DB_PASSWORD=yourpassword
-```
-
-**3. Create PostgreSQL database**
-```sql
-CREATE DATABASE loan_risk_db;
-```
-
-**4. Download models**
-```bash
-python download_models.py
-```
-
-**5. Run**
-```bash
-uvicorn api.main:app --reload
-streamlit run frontend/app.py
-```
-
----
-
 ## Database Schema
 
 | Table | Purpose |
@@ -216,6 +176,32 @@ SHAP explanations use original joblib models with TreeExplainer.
 | Deployment | HuggingFace Spaces |
 | Model Storage | HuggingFace Hub |
 | Tuning | Optuna |
+
+---
+
+## Development Phases
+
+| Phase | Title | Status |
+|-------|-------|--------|
+| 1 | Problem Framing | ✅ |
+| 2 | Environment Setup | ✅ |
+| 3 | Data Collection | ✅ |
+| 4 | Data Validation | ✅ |
+| 5 | EDA | ✅ |
+| 6 | Preprocessing | ✅ |
+| 7 | Feature Engineering | ✅ |
+| 8 | Baseline Models | ✅ |
+| 9 | Model Training | ✅ |
+| 10 | Hyperparameter Tuning | ✅ |
+| 11 | Model Evaluation | ✅ |
+| 12 | Explainability (SHAP) | ✅ |
+| 13 | Model Selection | ✅ |
+| 14 | ONNX Conversion | ✅ |
+| 15 | Database Setup | ✅ |
+| 16 | API Development | ✅ |
+| 17 | Frontend | ✅ |
+| 18 | Testing | ✅ |
+| 19 | Deployment | ✅ |
 
 ---
 
