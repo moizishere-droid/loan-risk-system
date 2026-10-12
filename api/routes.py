@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 from api.model_loader import is_loaded, get_model_status
 
@@ -49,7 +50,7 @@ def health(db: Session = Depends(get_db)):
     Returns model load status and DB connection status.
     """
     try:
-        stats  = get_prediction_stats(db)
+        db.execute(text("SELECT 1"))
         db_ok  = True
     except Exception:
         db_ok  = False

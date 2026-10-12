@@ -24,7 +24,7 @@ if not DATABASE_URL:
     DATABASE_URL = (f"postgresql://{DB_USER}:{DB_PASSWORD}"
                     f"@{DB_HOST}:{DB_PORT}/{DB_NAME}")
 
-engine  = create_engine(DATABASE_URL, echo=False)
+engine  = create_engine(DATABASE_URL, echo=False, pool_pre_ping=True)
 Session = sessionmaker(bind=engine)
 Base    = declarative_base()
 

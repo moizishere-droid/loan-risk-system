@@ -1,13 +1,33 @@
+---
+title: Loan Risk Assessment System
+emoji: "🏦"
+colorFrom: green
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # 🏦 Loan Risk Assessment System
 
 An end-to-end machine learning system for loan risk prediction. Given an applicant's financial profile, the system predicts whether a loan should be approved or rejected, estimates the interest rate, segments the borrower, and explains the decision in plain English.
 
-## 🚀 Live Demo
+## One Hugging Face Space
 
 | Component | URL |
 |---|---|
 | 🖥️ Live Demo | [https://abdulmoiz123-loan-risk-app.hf.space](https://abdulmoiz123-loan-risk-app.hf.space/) |
 | 🤗 Models | [Abdulmoiz123/loan-risk-models](https://huggingface.co/Abdulmoiz123/loan-risk-models) |
+
+Deploy this repository root as a Docker Space. Streamlit runs publicly on port
+7860 and calls FastAPI internally at `http://127.0.0.1:8000`.
+The frontend waits for healthy models and database before displaying its forms.
+
+See [SINGLE_SPACE_GUIDE.md](SINGLE_SPACE_GUIDE.md) for the project walkthrough,
+complete changed-file list, VS Code commands, and deployment instructions.
+
+Models remain in [Abdulmoiz123/loan-risk-models](https://huggingface.co/Abdulmoiz123/loan-risk-models).
+The existing Neon PostgreSQL database remains external to the Space.
 
 ---
 
@@ -25,9 +45,9 @@ An end-to-end machine learning system for loan risk prediction. Given an applica
 ## System Architecture
 User (Browser)
 ↓
-Streamlit Frontend
-↓
-FastAPI Backend
+Streamlit Frontend (port 7860)
+↓ internal HTTP, same Docker Space
+FastAPI Backend (127.0.0.1:8000)
 ↓          ↓
 ONNX Models    PostgreSQL DB (Neon Cloud)
 
@@ -83,46 +103,31 @@ Classification → Clustering → SHAP → Plain Reasons
 
 ---
 
-## Quickstart — Docker
+## Quickstart in VS Code (PowerShell)
 
-### Requirements
-- Docker Desktop installed and running
-- A Hugging Face read token from https://huggingface.co/settings/tokens
+Use Python 3.11. Open the project root, then run:
 
-### Steps
-
-**1. Clone the repository**
-```bash
-git clone https://github.com/moizishere-droid/loan-risk-system.git
-cd loan-risk-system
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.space.txt
+# Only if .env does not already exist:
+Copy-Item .env.example .env
+# Edit .env with your existing DATABASE_URL before starting.
+.\.venv\Scripts\python.exe start_space.py
 ```
 
-**2. Create `.env` file in project root**
-```env
-HF_TOKEN=hf_your_token_here
-DB_HOST=db
-DB_PORT=5432
-DB_NAME=loan_risk_db
-DB_USER=postgres
-DB_PASSWORD=yourpassword
+Open http://localhost:7860. Local API documentation is at http://127.0.0.1:8000/docs.
+Stop with Ctrl+C. Never replace an existing .env that contains your credentials.
+
+For Docker Desktop:
+
+```powershell
+docker build -t loan-risk-space .
+docker run --rm --name loan-risk-space --env-file .env -p 7860:7860 loan-risk-space
 ```
 
-**3. Build and run**
-```bash
-docker-compose up --build
-```
-
-**4. Access**
-
-| Service | URL |
-|---------|-----|
-| Frontend | http://localhost:8501 |
-| API docs | http://localhost:8000/docs |
-
-**5. Stop**
-```bash
-docker-compose down
-```
+The Docker API is internal; only the frontend is published. Set DATABASE_URL and,
+if needed, HF_TOKEN as Secrets in the single Hugging Face Space's settings.
 
 ---
 

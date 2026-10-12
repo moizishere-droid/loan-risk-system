@@ -1,0 +1,7 @@
+# Keep the existing model-compatible versions in the API requirements.
+-r requirements.api.txt
+-r requirements.frontend.txt
+huggingface-hub==1.7.1
+
+# Match the tested frontend environment; newer Arrow requires NumPy 2.
+pyarrow==14.0.2

@@ -11,6 +11,17 @@ __pycache__/
 venv/
 env/
 .env/
+.env
+.env.*
+.venv/
+hf-backend/
+hf-frontend/
+.cache/
+models/
+models_onnx/
+data/
+*.mp4
+*.png
 
 # Jupyter notebooks checkpoints
 .ipynb_checkpoints/

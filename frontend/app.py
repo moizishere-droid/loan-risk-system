@@ -1,10 +1,11 @@
 import os
 import streamlit as st
 import requests
+from frontend.backend_client import wait_for_api
 
 # CONFIG
 # Reads from environment — localhost for dev, http://api:8000 for Docker
-API_URL = os.getenv("API_URL", "http://localhost:8000")
+API_URL = os.getenv("API_URL", "http://127.0.0.1:8000").rstrip("/")
 
 st.set_page_config(
     page_title = "Loan Risk Assessment System",
@@ -20,6 +21,16 @@ st.markdown("---")
 LOAN_GRADES    = ["A", "B", "C", "D", "E", "F", "G"]
 LOAN_INTENTS   = ["DEBTCONSOLIDATION", "EDUCATION", "HOMEIMPROVEMENT","MEDICAL", "PERSONAL", "VENTURE"]
 HOME_OWNERSHIP = ["RENT", "OWN", "MORTGAGE", "OTHER"]
+
+
+def wake_up_api():
+    """Wait for the API before allowing frontend operations."""
+    with st.spinner("Starting the loan assessment service. Please wait..."):
+        ready = wait_for_api(API_URL)
+    if not ready:
+        st.error("The service is not ready yet. Retry in a moment. If this continues, check the Space logs and database settings.")
+        st.button("Retry connection", key="retry_api")
+        st.stop()
 
 
 def show_prediction_result(data):
@@ -144,6 +155,8 @@ def input_form(with_rate=False, key_prefix=""):
 
 
 # TABS
+wake_up_api()
+
 tab1, tab2, tab3, tab4 = st.tabs([
     "🆕 New Applicant",
     "🔄 Existing Loan",
@@ -166,6 +179,7 @@ with tab1:
         else:
             with st.spinner("Running prediction..."):
                 try:
+                    wake_up_api()
                     r = requests.post(f"{API_URL}/predict/new", json=payload, timeout=60)
                     if r.status_code == 200:
                         show_prediction_result(r.json())
@@ -189,6 +203,7 @@ with tab2:
         else:
             with st.spinner("Running prediction..."):
                 try:
+                    wake_up_api()
                     r = requests.post(f"{API_URL}/predict/existing", json=payload, timeout=60)
                     if r.status_code == 200:
                         show_prediction_result(r.json())
@@ -212,6 +227,7 @@ with tab3:
         else:
             with st.spinner("Fetching..."):
                 try:
+                    wake_up_api()
                     r = requests.get(f"{API_URL}/applicant/{cnic_search}", timeout=30)
                     if r.status_code == 200:
                         d = r.json()
@@ -280,6 +296,7 @@ with tab4:
         else:
             with st.spinner("Deleting..."):
                 try:
+                    wake_up_api()
                     r = requests.delete(f"{API_URL}/applicant/{cnic_delete}", timeout=30)
                     if r.status_code == 200:
                         st.success(r.json().get("message", "Deleted successfully."))

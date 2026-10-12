@@ -5,12 +5,16 @@ Called by Dockerfile.api before starting uvicorn.
 """
 
 import os
+from pathlib import Path
+from dotenv import load_dotenv
 from huggingface_hub import hf_hub_download
 
+BASE_DIR = Path(__file__).resolve().parent
+load_dotenv(BASE_DIR / ".env")
 
 REPO_ID   = "Abdulmoiz123/loan-risk-models"
 REPO_TYPE = "model"
-HF_TOKEN  = os.getenv("HF_TOKEN")  # set as environment variable on Render
+HF_TOKEN  = os.getenv("HF_TOKEN")  # optional for a public model repository
 
 
 # Files to download — (repo path, local path)
@@ -43,6 +47,7 @@ def download_all():
     print("Downloading model files from Hugging Face...")
 
     for repo_path, local_path in FILES:
+        local_path = BASE_DIR / local_path
         # Skip if already exists
         if os.path.exists(local_path):
             print(f"   SKIP  {local_path} (already exists)")
@@ -57,7 +62,7 @@ def download_all():
             repo_type = REPO_TYPE,
             filename  = repo_path,
             token     = HF_TOKEN,
-            local_dir = "."
+            local_dir = str(BASE_DIR)
         )
         print(f"   DONE  {local_path}")
 
