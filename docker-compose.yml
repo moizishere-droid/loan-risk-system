@@ -1,67 +1,40 @@
-# docker-compose.yml — Loan Risk Assessment System
-# Services: db + api + frontend
-
-version: '3.8'
-
+# Local development: one combined app container plus PostgreSQL.
+# Hugging Face uses the same root Dockerfile with your external database Secret.
 services:
-
-  # ── PostgreSQL Database
   db:
     image: postgres:15
-    container_name: loan_risk_db
-    restart: always
+    restart: unless-stopped
     environment:
-      POSTGRES_USER     : ${DB_USER}
-      POSTGRES_PASSWORD : ${DB_PASSWORD}
-      POSTGRES_DB       : ${DB_NAME}
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-localdev}
+      POSTGRES_DB: ${DB_NAME:-loan_risk_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test     : ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
-      interval : 10s
-      timeout  : 5s
-      retries  : 5
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
-
-  # ── FastAPI Backend
-  api:
+  app:
     build:
-      context    : .
-      dockerfile : Dockerfile.api
-    container_name: loan_risk_api
-    restart: always
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "${APP_PORT:-7860}:7860"
     environment:
-      DB_HOST     : db
-      DB_PORT     : 5432
-      DB_NAME     : ${DB_NAME}
-      DB_USER     : ${DB_USER}
-      DB_PASSWORD : ${DB_PASSWORD}
+      # Explicitly use the local database, even if .env has a Neon URL.
+      DATABASE_URL: ""
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${DB_NAME:-loan_risk_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-localdev}
+      HF_TOKEN: ${HF_TOKEN:-}
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      - .:/app
 
-
-  # ── Streamlit Frontend
-  frontend:
-    build:
-      context    : .
-      dockerfile : Dockerfile.frontend
-    container_name: loan_risk_frontend
-    restart: always
-    ports:
-      - "8501:8501"
-    environment:
-      API_URL: http://api:8000
-    depends_on:
-      - api
-
-
-# ── Volumes
 volumes:
   postgres_data:

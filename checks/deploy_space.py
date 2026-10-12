@@ -41,10 +41,13 @@ def main():
         repo_id=SPACE_ID, repo_type='space', folder_path=ROOT,
         allow_patterns=['Dockerfile', 'README.md', 'SINGLE_SPACE_GUIDE.md', '.dockerignore',
                         'start_space.py', 'download_models.py',
-                        'requirements.api.txt', 'requirements.frontend.txt',
-                        'requirements.space.txt', 'api/*.py', 'database/*.py',
+                        'requirements.txt', 'api/*.py', 'database/*.py',
                         'src/*.py', 'frontend/*.py'],
-        commit_message='Run Streamlit and FastAPI together in one Docker Space',
+        # Delete only superseded deployment files, never broad repository contents.
+        delete_patterns=['requirements.api.txt', 'requirements.frontend.txt',
+                         'requirements.space.txt', 'requirements_frozen.txt',
+                         'Dockerfile.api', 'Dockerfile.frontend'],
+        commit_message='Consolidate application requirements and Docker configuration',
     )
     print('Uploaded commit:', result.oid, flush=True)
     print('Space: https://huggingface.co/spaces/' + SPACE_ID, flush=True)

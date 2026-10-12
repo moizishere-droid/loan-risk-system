@@ -2,6 +2,7 @@ import os
 
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, create_engine, desc
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
+from sqlalchemy.engine import URL
 from sqlalchemy.sql import func
 
 import warnings
@@ -21,8 +22,10 @@ if not DATABASE_URL:
     DB_NAME     = os.getenv('DB_NAME')
     DB_USER     = os.getenv('DB_USER')
     DB_PASSWORD = os.getenv('DB_PASSWORD')
-    DATABASE_URL = (f"postgresql://{DB_USER}:{DB_PASSWORD}"
-                    f"@{DB_HOST}:{DB_PORT}/{DB_NAME}")
+    DATABASE_URL = URL.create(
+        "postgresql+psycopg2", username=DB_USER, password=DB_PASSWORD,
+        host=DB_HOST, port=int(DB_PORT or "5432"), database=DB_NAME,
+    )
 
 engine  = create_engine(DATABASE_URL, echo=False, pool_pre_ping=True)
 Session = sessionmaker(bind=engine)

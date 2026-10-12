@@ -46,9 +46,8 @@ The complete updated source files are already saved in this project.
     as its fallback. The root frontend had no wake-up gate.
 13. The new deployment builds from the parent project root, using its `api`,
     `database`, `src`, and `frontend` folders. The two legacy HF folders are
-    excluded from the image and are no longer deployment sources. The old
-    split Dockerfiles and Compose setup remain legacy alternatives; use the
-    new root Dockerfile and launcher for this migration.
+    removed along with the split Dockerfiles. Local Compose and Hugging Face
+    both use the root Dockerfile; Compose adds a local PostgreSQL container.
 
 This is a source and runtime-flow analysis. It does not re-run the training
 notebooks or independently validate the model quality figures in the README.
@@ -101,9 +100,11 @@ reverse proxy; it is not needed for the requested frontend workflow.
 
 | File at project root or relative location | Change and purpose |
 |---|---|
-| `Dockerfile` | New combined Docker Space image; installs both dependency sets and exposes 7860. |
+| `Dockerfile` | The single image used by both local Compose and Hugging Face; installs runtime requirements and exposes 7860. |
+| `docker-compose.yml` | Runs the combined app image plus local PostgreSQL with a persistent database volume. |
 | `start_space.py` | New launcher; starts API and UI concurrently, forces the internal API address, and stops both if either exits. |
-| `requirements.space.txt` | New combined dependency entry point; includes existing requirement files, Hugging Face Hub, and a tested PyArrow pin. |
+| `requirements.txt` | Consolidated application dependencies; preserves all 24 original runtime requirements and version constraints. |
+| `requirements-dev.txt` | Includes application dependencies plus 19 training, notebook, and testing requirements. |
 | `frontend/backend_client.py` | New bounded health polling with retries for startup failures. |
 | `frontend/app.py` | Updated internal API fallback; adds `wake_up_api()` and readiness gates. |
 | `api/routes.py` | Health probes use `SELECT 1` rather than aggregate prediction-statistics queries. |
@@ -118,9 +119,12 @@ reverse proxy; it is not needed for the requested frontend workflow.
 | `checks/deploy_space.py` | Uploads the combined app and configures Secrets from your local environment. |
 | `checks/verify_space.py` | Confirms live UI and API startup; optionally pauses the old API Space. |
 
-`requirements.api.txt` and `requirements.frontend.txt` are reused unchanged.
-No retraining, model conversion, schema redesign, or edits inside the two
-legacy HF Git checkouts are required.
+All Dockerfiles use the consolidated `requirements.txt`. For notebooks, training,
+and development tools, install `requirements-dev.txt`, which includes the app.
+The former split lists and Windows environment snapshot were removed after
+checking that every application and development requirement was preserved.
+No retraining, model conversion, or database schema changes are required.
+The two obsolete HF Git checkouts and split Dockerfiles have been removed.
 
 ## 4. Run in the VS Code PowerShell terminal
 
@@ -129,7 +133,7 @@ Open `C:\Users\DELL\Desktop\loan-risk-system` in VS Code. Use Python 3.11.
 ```powershell
 Set-Location 'C:\Users\DELL\Desktop\loan-risk-system'
 py -3.11 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.space.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
 Keep the existing `.env` if it already contains the working Neon connection.
@@ -158,24 +162,35 @@ http://127.0.0.1:8000/docs. Stop both services with Ctrl+C.
 No virtual-environment activation or PowerShell execution-policy change is
 needed when calling the interpreter by its full relative path.
 
-## 5. Optional Docker run
+## 5. Run locally with Docker Compose
 
-Start Docker Desktop and wait for its engine to be ready, then:
-
-```powershell
-docker build -t loan-risk-space .
-docker run --rm --name loan-risk-space --env-file .env -p 7860:7860 loan-risk-space
-```
-
-Open http://localhost:7860. To stop from another terminal:
+Start Docker Desktop, open the repository root, and run:
 
 ```powershell
-docker stop loan-risk-space
+docker compose up --build
 ```
 
-Use a database URL reachable from the container. For PostgreSQL running on
-Windows itself, Docker Desktop commonly uses `host.docker.internal` as the
-host. A Neon URL does not need this substitution. Only the UI port is published.
+Open http://localhost:7860. Compose uses the root Dockerfile for the combined
+app and starts PostgreSQL separately. The database stays local; a Neon account
+is not required. Development defaults are `DB_USER=postgres`,
+`DB_PASSWORD=localdev`, and `DB_NAME=loan_risk_db`. Override them in `.env` if
+needed. Compose deliberately ignores an existing Neon `DATABASE_URL`.
+Public model downloads do not require a token; restricted assets need HF_TOKEN.
+
+To stop while retaining database records:
+
+```powershell
+docker compose down
+```
+
+The existing `postgres_data` volume name is retained. If you already have a
+populated volume, keep the database credentials originally used to initialize
+it. Only the app port is published, so a local PostgreSQL installation does
+not compete for port 5432. The default app port is 7860; APP_PORT can change the
+host port without changing the container or Hugging Face configuration.
+
+Hugging Face uses the same Dockerfile, with DATABASE_URL supplied as a Secret
+for the external Neon database. It does not use Docker Compose.
 
 ## 6. Deploy the existing frontend Space as the combined Space
 
@@ -196,12 +211,12 @@ host. A Neon URL does not need this substitution. Only the UI port is published.
 
 You can upload through the HF web interface, or use these commands after local
 setup. Login requires a write-capable token for the Space, separate from any
-runtime read token. The explicit file list excludes your real `.env`, local
+runtime read token. These commands exclude your real `.env`, local
 models/data, videos, and nested Git checkouts.
 
 ```powershell
 .\.venv\Scripts\hf.exe auth login
-.\.venv\Scripts\hf.exe upload Abdulmoiz123/loan-risk-app . . --repo-type space --include 'Dockerfile' --include 'README.md' --include 'SINGLE_SPACE_GUIDE.md' --include '.dockerignore' --include 'start_space.py' --include 'download_models.py' --include 'requirements.api.txt' --include 'requirements.frontend.txt' --include 'requirements.space.txt' --include 'api/*.py' --include 'database/*.py' --include 'src/*.py' --include 'frontend/*.py'
+.\.venv\Scripts\hf.exe upload Abdulmoiz123/loan-risk-app . . --repo-type space --include 'Dockerfile' --include 'README.md' --include 'SINGLE_SPACE_GUIDE.md' --include '.dockerignore' --include 'start_space.py' --include 'download_models.py' --include 'requirements.txt' --include 'api/*.py' --include 'database/*.py' --include 'src/*.py' --include 'frontend/*.py'
 ```
 
 Uploading triggers a rebuild. It adds/replaces the deployment files and does
@@ -258,13 +273,14 @@ Run from the project root in VS Code PowerShell:
 
 ```powershell
 git remote set-url origin https://github.com/moizishere-droid/loan-risk-system.git
-git add .dockerignore .env.example Dockerfile README.md SINGLE_SPACE_GUIDE.md requirements.space.txt start_space.py download_models.py frontend/app.py frontend/backend_client.py api/routes.py database/database.py checks
+git add -u
+git add requirements-dev.txt
 git diff --cached --stat
-git commit -m "Combine frontend and API in one Hugging Face Space"
+git commit -m "Simplify requirements and share one Dockerfile across deployments"
 git push origin main
 ```
 
-The explicit file list leaves your unrelated image, text, and video files out
+These commands leave your unrelated image, text, and video files out
 of this commit. It also excludes your real `.env` and downloaded model/data
 files. If GitHub rejects the push because `main` changed remotely, run
 `git pull --rebase origin main`, resolve any conflicts, then push again.
@@ -314,5 +330,27 @@ Cloud verification confirmed the Space was RUNNING, the public Streamlit health
 endpoint returned `ok`, and runtime logs confirmed successful model loading after
 database initialization. The previous `Abdulmoiz123/loan-risk-api` Space was then
 paused, then permanently deleted at your request after confirming the combined
-app was healthy. Only the combined app Space remains. The GitHub changes are prepared locally; no GitHub commit or push was
-made on your behalf. Use the commands in section 9 to push them.
+app was healthy. Only the combined app Space remains. The original single-Space migration was pushed to GitHub. This subsequent
+requirements/Docker cleanup is prepared locally; use section 9 to push it.
+
+
+## 12. Dependency and Docker cleanup
+
+Five requirements files are now two: requirements.txt installs the complete app;
+requirements-dev.txt includes it and adds training, notebook, and test tools.
+The 24 unique runtime requirements and all 19 development-only requirements
+retain their original constraints. Repeated entries were deduplicated.
+The Windows-specific frozen snapshot was removed; Git retains its history.
+
+There is one Dockerfile. Compose uses it for the combined app plus PostgreSQL;
+Hugging Face uses it with Neon. The old Dockerfile.api, Dockerfile.frontend,
+hf-backend, and hf-frontend copies were removed after updating their consumers.
+
+
+Cleanup validation: fresh pip dependency resolution passed for both runtime and
+development requirements without changing the installed environment. Five offline
+regression checks passed. Both actual prediction workflows, frontend rendering,
+and applicant persistence/lookup/deletion passed with a disposable database.
+Compose configuration validation passed, including its local database settings.
+The Docker Desktop engine was not running, so a full local container execution
+was not performed. All temporary dependency reports and logs were removed.

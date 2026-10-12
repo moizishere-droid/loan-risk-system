@@ -5,8 +5,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 \
     && useradd --create-home --uid 1000 appuser
 
 WORKDIR /app
-COPY requirements.api.txt requirements.frontend.txt requirements.space.txt ./
-RUN pip install --no-cache-dir -r requirements.space.txt
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 RUN python -c "import streamlit, numpy, shap, onnxruntime"
 
 COPY --chown=appuser:appuser api/ ./api/

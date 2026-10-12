@@ -14,8 +14,6 @@ env/
 .env
 .env.*
 .venv/
-hf-backend/
-hf-frontend/
 .cache/
 models/
 models_onnx/

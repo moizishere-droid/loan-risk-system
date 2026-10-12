@@ -103,31 +103,66 @@ Classification → Clustering → SHAP → Plain Reasons
 
 ---
 
-## Quickstart in VS Code (PowerShell)
+## Dependency files
 
-Use Python 3.11. Open the project root, then run:
+Use Python 3.11. There are two dependency files:
+
+| File | Purpose | Install command |
+|---|---|---|
+| `requirements.txt` | Run the API and frontend locally or on Hugging Face | `python -m pip install -r requirements.txt` |
+| `requirements-dev.txt` | Also train models, use notebooks, and run development tools | `python -m pip install -r requirements-dev.txt` |
+
+The development file includes the application file, so you only install one.
+The single root `Dockerfile` installs `requirements.txt`. Compose runs that
+combined app image alongside a local PostgreSQL container; Hugging Face runs
+the same image with your external Neon database.
+
+The former API, frontend, and Space requirement lists were merged without
+changing their 24 unique package requirements or version constraints. The former
+training/development list contributes 19 additional requirements to the dev file.
+The old frozen file was a snapshot of a Windows environment, including indirect
+and Windows-only dependencies; it is not a portable installer and was removed.
+Its original contents remain available in Git history.
+
+## Run locally with Docker
+
+Install and start Docker Desktop. Clone the repository, open its root folder,
+and run:
+
+```powershell
+docker compose up --build
+```
+
+Open http://localhost:7860. Compose starts the combined API/frontend container
+and a local PostgreSQL database. No Neon account is required. It uses the local
+`DB_USER`, `DB_PASSWORD`, and `DB_NAME` values from `.env` if supplied, otherwise
+the development defaults documented in `.env.example`. An existing Neon
+`DATABASE_URL` is not used by Compose. Public model assets download automatically.
+
+Stop the containers while preserving database records:
+
+```powershell
+docker compose down
+```
+
+## Run directly with Python (optional)
+
+Use Python 3.11 and a reachable PostgreSQL database:
 
 ```powershell
 py -3.11 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.space.txt
-# Only if .env does not already exist:
-Copy-Item .env.example .env
-# Edit .env with your existing DATABASE_URL before starting.
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+if (-not (Test-Path -LiteralPath .env)) { Copy-Item .env.example .env }
+# Set DATABASE_URL in .env before starting.
 .\.venv\Scripts\python.exe start_space.py
 ```
 
-Open http://localhost:7860. Local API documentation is at http://127.0.0.1:8000/docs.
-Stop with Ctrl+C. Never replace an existing .env that contains your credentials.
+Open http://localhost:7860. Direct Python execution also exposes local API docs
+at http://127.0.0.1:8000/docs. Stop with Ctrl+C. For training and notebooks,
+install `requirements-dev.txt` instead of the runtime-only file.
 
-For Docker Desktop:
-
-```powershell
-docker build -t loan-risk-space .
-docker run --rm --name loan-risk-space --env-file .env -p 7860:7860 loan-risk-space
-```
-
-The Docker API is internal; only the frontend is published. Set DATABASE_URL and,
-if needed, HF_TOKEN as Secrets in the single Hugging Face Space's settings.
+Docker publishes only the frontend. Hugging Face uses the root `Dockerfile`;
+configure `DATABASE_URL` and, if needed, `HF_TOKEN` as Space Secrets.
 
 ---
 

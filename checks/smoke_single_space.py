@@ -74,6 +74,15 @@ def main():
                 else:
                     process.terminate()
                 process.wait(timeout=30)
+                # Windows can release descendant SQLite handles after taskkill returns.
+                for attempt in range(50):
+                    try:
+                        (Path(tmp) / 'check.db').unlink(missing_ok=True)
+                        break
+                    except PermissionError:
+                        if attempt == 49:
+                            raise
+                        time.sleep(0.1)
 
 
 if __name__ == '__main__':
