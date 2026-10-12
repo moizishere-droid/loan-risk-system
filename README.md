@@ -6,9 +6,7 @@ An end-to-end machine learning system for loan risk prediction. Given an applica
 
 | Component | URL |
 |---|---|
-| 🖥️ Frontend | [https://abdulmoiz123-loan-risk-app.hf.space](https://abdulmoiz123-loan-risk-app.hf.space) |
-| ⚡ Backend API | [https://abdulmoiz123-loan-risk-api.hf.space](https://abdulmoiz123-loan-risk-api.hf.space) |
-| 📖 API Docs | [https://abdulmoiz123-loan-risk-api.hf.space/docs](https://abdulmoiz123-loan-risk-api.hf.space/docs) |
+| 🖥️ Live Demo | [https://abdulmoiz123-loan-risk-app.hf.space](https://abdulmoiz123-loan-risk-app.hf.space/) |
 | 🤗 Models | [Abdulmoiz123/loan-risk-models](https://huggingface.co/Abdulmoiz123/loan-risk-models) |
 
 ---
