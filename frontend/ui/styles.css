@@ -1,0 +1,112 @@
+/* Native Streamlit widgets with the approved CodeMentor-inspired palette. */
+.stApp { background: var(--lr-bg); color: var(--lr-text); }
+.stApp, .stApp input, .stApp button, .stApp select { font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; }
+[data-testid="stHeader"] { background: var(--lr-bg); }
+[data-testid="stSidebar"] { background: var(--lr-paper); border-right: 1px solid var(--lr-line); }
+.block-container { max-width: 1240px; padding: 2.5rem 2.5rem 2rem; }
+h1, h2, h3, h4 { color: var(--lr-text) !important; letter-spacing: -.035em; }
+h1 { font-size: 2.1rem; font-weight: 600; padding-top: .25rem; }
+h2 { font-size: 1.5rem; font-weight: 600; }
+h3 { font-size: 1.08rem; font-weight: 600; }
+h4 { font-size: 1rem; margin-top: .7rem; }
+p, label, [data-testid="stMarkdownContainer"], [data-testid="stWidgetLabel"] { color: var(--lr-text); }
+[data-testid="stCaptionContainer"] p { color: var(--lr-muted); }
+[data-testid="stMetricLabel"] p { color: var(--lr-muted); font-size: .8rem; }
+[data-testid="stMetricValue"] { color: var(--lr-text); font-size: 1.6rem; font-weight: 500; }
+.stButton button, .stFormSubmitButton button { min-height: 44px; border: 1px solid var(--lr-line); border-radius: 10px; background: var(--lr-paper); color: var(--lr-text); font-weight: 500; }
+.stButton button:hover, .stFormSubmitButton button:hover { background: var(--lr-soft); border-color: var(--lr-accent); color: var(--lr-accent); }
+button[kind^="primary"], [data-testid="baseButton-primary"], [data-testid="baseButton-primaryFormSubmit"] { background: var(--lr-accent); border-color: var(--lr-accent); color: var(--lr-on); }
+button[kind^="primary"] [data-testid="stMarkdownContainer"], button[kind^="primary"] p { color: var(--lr-on); }
+.stTextInput input, .stNumberInput input {
+  background: var(--lr-paper);
+  color: var(--lr-text);
+  -webkit-text-fill-color: var(--lr-text);
+  caret-color: var(--lr-text);
+  cursor: text;
+  min-height: 44px;
+}
+/* Browser dark mode must not leave a pale caret on the app's light fields. */
+.stTextInput input:focus, .stNumberInput input:focus {
+  background: #fff;
+  color: #111;
+  -webkit-text-fill-color: #111;
+  caret-color: #111;
+}
+/* Override the browser's blue/gray autofill fill, including password-manager fills. */
+.stTextInput input:-webkit-autofill, .stNumberInput input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #fff inset !important;
+  box-shadow: 0 0 0 1000px #fff inset !important;
+  -webkit-text-fill-color: #111 !important;
+  caret-color: #111 !important;
+}
+.stTextInput input:autofill, .stNumberInput input:autofill {
+  background: #fff !important;
+  color: #111 !important;
+}
+.stTextInput input::placeholder, .stNumberInput input::placeholder { color: var(--lr-muted); opacity: 1; }
+/* Retain validation limits but hide Streamlit's character-count overlays. */
+.stTextInput [data-testid="InputInstructions"] { display: none; }
+[data-baseweb="input"], [data-baseweb="base-input"], [data-baseweb="select"] > div { background: var(--lr-paper); color: var(--lr-text); border-color: var(--lr-line); border-radius: 9px; }
+[data-baseweb="popover"], [data-baseweb="menu"], [role="listbox"], [role="option"] { background: var(--lr-paper); color: var(--lr-text); }
+[data-baseweb="popover"] li:hover { background: var(--lr-soft); }
+[data-testid="stNumberInput"] button { background: var(--lr-paper); color: var(--lr-text); }
+[data-testid="stForm"] { border: 0; padding: 0; }
+[data-testid="stVerticalBlockBorderWrapper"] > div { border-color: var(--lr-line) !important; border-radius: 16px; }
+[data-testid="stVerticalBlockBorderWrapper"]:has(> div[style*="border: 1px"]) { background: var(--lr-paper); border-radius: 16px; }
+details { background: var(--lr-paper); border-color: var(--lr-line) !important; color: var(--lr-text); border-radius: 12px !important; }
+summary:hover { color: var(--lr-accent) !important; }
+.sidebar-heading { color: var(--lr-text); font-size: 20px; font-weight: 600; letter-spacing: -.035em; margin: 6px 0 18px; }
+[data-testid="stSidebar"] .stButton button {
+  justify-content: flex-start;
+  min-height: 48px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border-color: var(--lr-line);
+  background: var(--lr-paper);
+}
+[data-testid="stSidebar"] .stButton button:hover { background: var(--lr-soft); border-color: var(--lr-accent); }
+[data-testid="stSidebar"] .stButton button[kind="primary"] { background: var(--lr-soft); border-color: var(--lr-accent); color: var(--lr-accent); }
+[data-testid="stSidebar"] button[kind="primary"] [data-testid="stMarkdownContainer"],
+[data-testid="stSidebar"] button[kind="primary"] p { color: var(--lr-accent); font-weight: 600; }
+.sidebar-account { display: flex; gap: 12px; align-items: center; margin: 28px 0 12px; padding-top: 24px; border-top: 1px solid var(--lr-line); }
+.sidebar-account > div { min-width: 0; }
+.sidebar-avatar { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: var(--lr-soft); color: var(--lr-accent); font-weight: 600; }
+.sidebar-account strong { color: var(--lr-text); font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.sidebar-email { color: var(--lr-muted); font-size: 12px; margin-top: 4px; overflow-wrap: anywhere; }
+hr { border-color: var(--lr-line); }
+.brand { display: flex; align-items: center; gap: 10px; font-size: 22px; letter-spacing: -.045em; font-weight: 650; min-height: 44px; }
+.brand span { display: grid; place-items: center; width: 34px; height: 36px; color: var(--lr-on); background: var(--lr-accent); border-radius: 10px; font-size: 24px; }
+.header-rule { border-bottom: 1px solid var(--lr-line); margin: 6px 0 28px; }
+.eyebrow { font-size: 11px; letter-spacing: .13em; text-transform: uppercase; color: var(--lr-accent); font-weight: 600; }
+.hero { padding: 34px 0 12px; }
+.hero h1 { font-size: clamp(35px, 4.7vw, 58px); line-height: 1.1; letter-spacing: -.05em; padding: 16px 0 12px; }
+.hero p { font-size: 16px; line-height: 1.8; color: var(--lr-muted); max-width: 430px; }
+.overview { margin: 28px 0; padding: 28px; background: var(--lr-paper); border: 1px solid var(--lr-line); border-radius: 20px; box-shadow: 0 12px 40px #00000004; }
+.overline { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; color: var(--lr-muted); margin-bottom: 22px; }
+.pill { display: inline-block; color: var(--lr-accent); background: var(--lr-soft); border-radius: 30px; padding: 5px 11px; font-size: 12px; }
+.overview h2.approved { color: var(--lr-accent) !important; font-size: 32px; margin: 12px 0 0; padding-bottom: 0; }
+.overview p, .overview small { color: var(--lr-muted); }
+.sample-metrics { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin: 24px 0; }
+.sample-metrics strong { display: block; font-size: 28px; font-weight: 500; letter-spacing: -.04em; }
+.sample-metrics small { font-size: 11px; }
+.sample-reason { display: flex; justify-content: space-between; gap: 12px; padding: 14px 0; border-top: 1px solid var(--lr-line); font-size: 13px; }
+.sample-reason span { color: var(--lr-accent); font-size: 11px; }
+.auth-story { background: var(--lr-soft); border-radius: 20px; padding: 44px; min-height: 480px; }
+.auth-story h2 { font-size: 36px; line-height: 1.2; margin: 28px 0; }
+.auth-story p { color: var(--lr-muted); margin-bottom: 32px; }
+.auth-story > div:not(.eyebrow) { border-top: 1px solid var(--lr-line); padding: 14px 0; font-size: 13px; }
+.footer { margin-top: 42px; padding-top: 18px; border-top: 1px solid var(--lr-line); color: var(--lr-muted); font-size: 11px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+@media(max-width: 760px) {
+  .block-container { padding: 2rem 1rem; }
+  .hero { padding-top: 10px; }
+  .auth-story { min-height: auto; padding: 26px; }
+  .brand { font-size: 19px; }
+  .overview { margin-top: 12px; padding: 20px; }
+  [data-testid="stHorizontalBlock"]:has(.brand) { flex-wrap: wrap; gap: 8px; }
+  [data-testid="stHorizontalBlock"]:has(.brand) > [data-testid="column"] { width: auto !important; min-width: 0 !important; flex: 1 1 0 !important; }
+  [data-testid="stHorizontalBlock"]:has(.brand) > [data-testid="column"]:first-child { flex-basis: 100% !important; }
+  [data-testid="stHorizontalBlock"]:has(.brand) > [data-testid="column"]:last-child { flex: 0 0 44px !important; }
+  [data-testid="stHorizontalBlock"]:has(.brand) button { padding: .4rem; }
+  [data-testid="stHorizontalBlock"]:has(.brand) button p { font-size: 12px; }
+}
+@media(prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }

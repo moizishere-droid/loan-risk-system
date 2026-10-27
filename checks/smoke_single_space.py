@@ -41,8 +41,21 @@ def main():
                 from streamlit.testing.v1 import AppTest
                 ui = AppTest.from_file(str(ROOT / 'frontend/app.py')).run(timeout=30)
                 assert not ui.exception, ui.exception
-                assert len(ui.tabs) == 4, 'Frontend did not unlock its four tabs'
-                print('Frontend renders all four tabs after readiness: PASS', flush=True)
+                assert any('Better insight' in item.value for item in ui.markdown)
+                base = 'http://127.0.0.1:8000'
+                client = requests.Session()
+                registration = client.post(f'{base}/auth/register', json={
+                    'email': 'smoke@example.com', 'full_name': 'Smoke Check',
+                    'password': 'test-password-123'}, timeout=10)
+                assert registration.status_code == 201, registration.text
+                token = registration.json()['token']
+                client.headers['Authorization'] = f'Bearer {token}'
+                ui.session_state['token'] = token
+                ui.session_state['page'] = 'Workspace'
+                ui.run(timeout=30)
+                assert not ui.exception, ui.exception
+                assert len([b for b in ui.button if b.key and b.key.startswith('nav_')]) == 4
+                print('Landing, account creation, and four workspace sections: PASS', flush=True)
                 payload = dict(cnic='99999-0000000-0', loan_amnt=5000,
                                loan_grade='A', loan_intent='EDUCATION', loan_percent_income=0.08,
                                person_income=65000, person_age=35, person_emp_length=8.0,
@@ -50,17 +63,17 @@ def main():
                                cb_person_cred_hist_length=10.0)
                 base = 'http://127.0.0.1:8000'
                 for path, data in [('new', payload), ('existing', {**payload, 'loan_int_rate': 12.0})]:
-                    response = requests.post(f'{base}/predict/{path}', json=data, timeout=60)
+                    response = client.post(f'{base}/predict/{path}', json=data, timeout=60)
                     assert response.status_code == 200, response.text
                     result = response.json()
                     assert result['classification']['decision'] in ('APPROVED', 'REJECTED')
                     assert result['regression'] is not None if path == 'new' else result['regression'] is None
                     print(f'{path} prediction with ONNX and SHAP: PASS', flush=True)
-                response = requests.get(f'{base}/applicant/{payload["cnic"]}', timeout=10)
+                response = client.get(f'{base}/applicant/{payload["cnic"]}', timeout=10)
                 assert response.status_code == 200 and response.json()['total_visits'] == 2, response.text
-                response = requests.delete(f'{base}/applicant/{payload["cnic"]}', timeout=10)
+                response = client.delete(f'{base}/applicant/{payload["cnic"]}', timeout=10)
                 assert response.status_code == 200, response.text
-                assert requests.get(f'{base}/applicant/{payload["cnic"]}', timeout=10).status_code == 404
+                assert client.get(f'{base}/applicant/{payload["cnic"]}', timeout=10).status_code == 404
                 print('Applicant persistence, lookup, and delete: PASS', flush=True)
             except BaseException:
                 print(log_path.read_text(encoding='utf-8', errors='replace')[-7000:])

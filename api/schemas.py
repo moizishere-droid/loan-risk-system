@@ -1,9 +1,20 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+import re
 from typing import Optional
 
 
 # INPUT SCHEMAS
-class NewApplicantInput(BaseModel):
+class CnicInput(BaseModel):
+    @field_validator('cnic', check_fields=False)
+    @classmethod
+    def normalize_cnic(cls, value):
+        if not re.fullmatch(r'(?:[0-9]{13}|[0-9]{5}-[0-9]{7}-[0-9])', value):
+            raise ValueError('Enter a 13-digit CNIC or use 42101-1234567-1')
+        digits = value.replace('-', '')
+        return f'{digits[:5]}-{digits[5:12]}-{digits[12]}'
+
+
+class NewApplicantInput(CnicInput):
     """
     Input schema for New Applicant workflow.
     loan_int_rate is NOT provided — predicted by regression model.
@@ -42,7 +53,7 @@ class NewApplicantInput(BaseModel):
     }
 
 
-class ExistingLoanInput(BaseModel):
+class ExistingLoanInput(CnicInput):
     """
     Input schema for Existing Loan workflow.
     loan_int_rate IS provided — regression model is skipped.

@@ -10,6 +10,32 @@ pinned: false
 
 # 🏦 Loan Risk Assessment System
 
+The Streamlit frontend includes a public landing page, email/password sign-up and
+login, light/dark appearance, and four account-protected workspace sections:
+New Applicant, Existing Loan, Applicant Profile, and Delete Applicant. Results
+include decision metrics, borrower probabilities, plain-language reasons and
+expandable SHAP explanations. Deletion requires reviewing the applicant and
+typing `DELETE`.
+
+Accounts and hashed sessions persist in the configured PostgreSQL database.
+Passwords use salted PBKDF2-SHA256 hashes; sessions expire after 24 hours and are
+revoked on logout. A browser refresh may require logging in again because bearer
+tokens stay in the Streamlit session, never in page URLs or local storage.
+Sign-up does not send a verification email or provide password recovery.
+
+Predictions, profile summaries, statistics and deletion are scoped to the signed-in
+account, including when different accounts assess the same CNIC. Existing records
+created before accounts were introduced remain in the database, unassigned;
+they are not automatically exposed to newly registered users. New `users`,
+`auth_sessions`, and `prediction_owners` tables are created on API startup without
+altering the existing tables. All prediction/profile/stats requests now require
+an `Authorization: Bearer <token>` header, obtained from `POST /auth/register`
+or `POST /auth/login` with an email and password (and `full_name` for registration).
+Health and root endpoints remain public. No extra runtime packages are required.
+
+Run account/API and Streamlit flow checks without downloading models:
+`python -m unittest discover -s checks -p "test_*.py"`.
+
 An end-to-end machine learning system for loan risk prediction. Given an applicant's financial profile, the system predicts whether a loan should be approved or rejected, estimates the interest rate, segments the borrower, and explains the decision in plain English.
 
 ## One Hugging Face Space

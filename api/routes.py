@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+from api.auth import current_user
+from database.database import User
 
 from api.model_loader import is_loaded, get_model_status
 
@@ -65,17 +67,17 @@ def health(db: Session = Depends(get_db)):
     )
 
 @router.get("/stats", response_model=StatsResponse, tags=["Stats"])
-def stats(db: Session = Depends(get_db)):
+def stats(db: Session = Depends(get_db), user: User = Depends(current_user)):
     """
     Prediction statistics endpoint.
     Returns total, approved, rejected counts and averages.
     """
-    return get_prediction_stats(db)
+    return get_prediction_stats(db, user.id)
 
 
 # APPLICANT — GET BY CNIC
 @router.get("/applicant/{cnic}", response_model=ApplicantResponse,tags=["Applicant"])
-def get_applicant(cnic: str, db: Session = Depends(get_db)):
+def get_applicant(cnic: str, db: Session = Depends(get_db), user: User = Depends(current_user)):
     """
     Get full applicant profile by CNIC.
     Returns:
@@ -84,7 +86,7 @@ def get_applicant(cnic: str, db: Session = Depends(get_db)):
         - Full prediction history
     """
     # Get applicant
-    applicant, history = get_applicant_history(db, cnic)
+    applicant, history = get_applicant_history(db, cnic, user.id)
 
     if not applicant:
         raise HTTPException(
@@ -139,14 +141,15 @@ def get_applicant(cnic: str, db: Session = Depends(get_db)):
 
     return ApplicantResponse(
         cnic               = applicant.cnic,
-        first_seen         = str(applicant.first_seen),
-        last_seen          = str(applicant.last_seen),
-        total_visits       = applicant.total_visits,
-        total_approved     = applicant.total_approved,
-        total_rejected     = applicant.total_rejected,
-        last_decision      = applicant.last_decision,
-        last_loan_amnt     = applicant.last_loan_amnt,
-        last_interest_rate = applicant.last_interest_rate,
+        first_seen         = str(history[-1].timestamp),
+        last_seen          = str(history[0].timestamp),
+        total_visits       = len(history),
+        total_approved     = sum(p.decision == 'APPROVED' for p in history),
+        total_rejected     = sum(p.decision == 'REJECTED' for p in history),
+        last_decision      = history[0].decision,
+        last_loan_amnt     = last_visit.inputs.loan_amnt if last_visit.inputs else None,
+        last_interest_rate = (last_visit.interest_rate if last_visit.interest_rate is not None
+                              else last_visit.inputs.loan_int_rate if last_visit.inputs else None),
         last_visit         = last_visit,
         #history            = prediction_records   -> we can uncomment it but for now no
     )
@@ -154,9 +157,9 @@ def get_applicant(cnic: str, db: Session = Depends(get_db)):
 
 # DELETE - APPLICANT
 @router.delete("/applicant/{cnic}", tags=["Applicant"])
-def delete_applicant(cnic: str, db: Session = Depends(get_db)):
+def delete_applicant(cnic: str, db: Session = Depends(get_db), user: User = Depends(current_user)):
     """Delete applicant and all their records by CNIC."""
-    deleted = delete_applicant_by_cnic(db, cnic)
+    deleted = delete_applicant_by_cnic(db, cnic, user.id)
     if not deleted:
         raise HTTPException(
             status_code=404,
@@ -167,7 +170,7 @@ def delete_applicant(cnic: str, db: Session = Depends(get_db)):
 
 # PREDICT — NEW APPLICANT
 @router.post("/predict/new", response_model=PredictionResponse, tags=["Predict"])
-def predict_new(input_data : NewApplicantInput, db : Session = Depends(get_db)):
+def predict_new(input_data : NewApplicantInput, db : Session = Depends(get_db), user: User = Depends(current_user)):
     """
     New Applicant workflow.
     - No loan_int_rate provided
@@ -186,6 +189,7 @@ def predict_new(input_data : NewApplicantInput, db : Session = Depends(get_db)):
         saved = save_full_prediction(
             session         = db,
             cnic            = input_data.cnic,
+            user_id         = user.id,
             prediction_data = result['prediction_data'],
             input_data      = result['input_data'],
             explanations = (
@@ -217,7 +221,7 @@ def predict_new(input_data : NewApplicantInput, db : Session = Depends(get_db)):
 
 # PREDICT — EXISTING LOAN
 @router.post("/predict/existing", response_model=PredictionResponse, tags=["Predict"])
-def predict_existing(input_data : ExistingLoanInput, db : Session = Depends(get_db)):
+def predict_existing(input_data : ExistingLoanInput, db : Session = Depends(get_db), user: User = Depends(current_user)):
     """
     Existing Loan workflow.
     - loan_int_rate is provided
@@ -237,6 +241,7 @@ def predict_existing(input_data : ExistingLoanInput, db : Session = Depends(get_
         saved = save_full_prediction(
             session         = db,
             cnic            = input_data.cnic,
+            user_id         = user.id,
             prediction_data = result['prediction_data'],
             input_data      = result['input_data'],
             explanations = (

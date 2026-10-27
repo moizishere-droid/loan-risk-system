@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from api.model_loader import load_all_models
 from api.routes import router
+from api.auth import router as auth_router
 from database.database import create_tables
 
 
@@ -40,3 +41,4 @@ app.add_middleware(
 
 # Routes
 app.include_router(router)
+app.include_router(auth_router)

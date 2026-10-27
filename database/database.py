@@ -32,6 +32,29 @@ Session = sessionmaker(bind=engine)
 Base    = declarative_base()
 
 
+class User(Base):
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True)
+    email = Column(String(254), unique=True, nullable=False)
+    full_name = Column(String(120), nullable=False)
+    password_hash = Column(String(200), nullable=False)
+    created_at = Column(DateTime, default=func.now())
+
+
+class AuthSession(Base):
+    __tablename__ = 'auth_sessions'
+    token_hash = Column(String(64), primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+
+
+class PredictionOwner(Base):
+    """Account ownership without changing or assigning legacy applicant records."""
+    __tablename__ = 'prediction_owners'
+    prediction_id = Column(Integer, ForeignKey('predictions.id'), primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False, index=True)
+
+
 # Session start and end points
 def get_session():
     """Get a new database session."""
@@ -106,6 +129,7 @@ class Prediction(Base):
                                 cascade='all, delete-orphan')
     explanations = relationship('Explanation', back_populates='prediction',
                                 cascade='all, delete-orphan')
+    ownership = relationship('PredictionOwner', cascade='all, delete-orphan', uselist=False)
 
     def __repr__(self):
         return (f"<Prediction(id={self.id}, "
@@ -199,7 +223,7 @@ def create_tables():
 
 
 # CRUD — SAVE FUNCTIONS
-def get_or_create_applicant(session, cnic, prediction_data, input_data):
+def get_or_create_applicant(session, cnic, prediction_data, input_data, commit=True):
     """
     Get existing applicant by CNIC or create new one.
     Updates visit stats on every call.
@@ -240,14 +264,14 @@ def get_or_create_applicant(session, cnic, prediction_data, input_data):
         applicant.last_interest_rate  = rate
         applicant.last_seen           = func.now()
 
-    session.commit()
+    session.commit() if commit else session.flush()
     session.refresh(applicant)
     return applicant
 
 
-def save_prediction(session, prediction_data, applicant_id):
+def save_prediction(session, prediction_data, applicant_id, user_id=None, commit=True):
     cls = prediction_data['classification']
-    reg = prediction_data.get('regression', {})
+    reg = prediction_data.get('regression') or {}
     clu = prediction_data['clustering']
 
     prediction = Prediction(
@@ -263,12 +287,14 @@ def save_prediction(session, prediction_data, applicant_id):
     )
 
     session.add(prediction)
-    session.commit()
+    if user_id is not None:
+        prediction.ownership = PredictionOwner(user_id=user_id)
+    session.commit() if commit else session.flush()
     session.refresh(prediction)
     return prediction
 
 
-def save_input(session, prediction_id, input_data):
+def save_input(session, prediction_id, input_data, commit=True):
     """
     Save raw user inputs to inputs table.
     Args:
@@ -293,12 +319,12 @@ def save_input(session, prediction_id, input_data):
     )
 
     session.add(input_record)
-    session.commit()
+    session.commit() if commit else session.flush()
     session.refresh(input_record)
     return input_record
 
 
-def save_explanation(session, prediction_id, explanations):
+def save_explanation(session, prediction_id, explanations, commit=True):
     """
     Save SHAP explanations to explanations table.
     Args:
@@ -322,26 +348,27 @@ def save_explanation(session, prediction_id, explanations):
         session.add(explanation)
         saved.append(explanation)
 
-    session.commit()
+    session.commit() if commit else session.flush()
     return saved
 
 
 # CRUD — QUERY FUNCTIONS
-def get_prediction_stats(session):
+def get_prediction_stats(session, user_id=None):
     """
     Get summary statistics of all predictions.
     Returns:
         dict: total, approved, rejected, averages
     """
-    total    = session.query(Prediction).count()
-    approved = session.query(Prediction).filter(
+    query = session.query(Prediction)
+    if user_id is not None:
+        query = query.join(PredictionOwner).filter(PredictionOwner.user_id == user_id)
+    total    = query.count()
+    approved = query.filter(
         Prediction.decision == 'APPROVED').count()
-    rejected = session.query(Prediction).filter(
+    rejected = query.filter(
         Prediction.decision == 'REJECTED').count()
-    avg_prob = session.query(
-        func.avg(Prediction.default_probability)).scalar()
-    avg_rate = session.query(
-        func.avg(Prediction.interest_rate)).scalar()
+    avg_prob = query.with_entities(func.avg(Prediction.default_probability)).scalar()
+    avg_rate = query.with_entities(func.avg(Prediction.interest_rate)).scalar()
 
     return {
         'total'                  : total,
@@ -351,7 +378,7 @@ def get_prediction_stats(session):
         'avg_interest_rate'      : round(float(avg_rate or 0), 4)
     }
 
-def delete_applicant_by_cnic(session, cnic):
+def delete_applicant_by_cnic(session, cnic, user_id=None):
     """
     Delete applicant and ALL related records by CNIC.
     Cascade deletes:
@@ -363,6 +390,31 @@ def delete_applicant_by_cnic(session, cnic):
         bool: True if deleted, False if not found
     """
     applicant = get_applicant_by_cnic(session, cnic)
+    if user_id is not None:
+        applicant, owned = get_applicant_history(session, cnic, user_id)
+        if not applicant:
+            return False
+        for prediction in owned:
+            session.delete(prediction)
+        session.flush()
+        remaining = session.query(Prediction).filter_by(applicant_id=applicant.id).order_by(
+            Prediction.timestamp.desc(), Prediction.id.desc()).all()
+        if not remaining:
+            session.delete(applicant)
+        else:
+            latest = remaining[0]
+            applicant.total_visits = len(remaining)
+            applicant.total_approved = sum(p.decision == 'APPROVED' for p in remaining)
+            applicant.total_rejected = sum(p.decision == 'REJECTED' for p in remaining)
+            applicant.first_seen = remaining[-1].timestamp
+            applicant.last_seen = latest.timestamp
+            applicant.last_decision = latest.decision
+            applicant.last_loan_amnt = latest.inputs[0].loan_amnt if latest.inputs else None
+            applicant.last_interest_rate = latest.interest_rate
+            if latest.interest_rate is None and latest.inputs:
+                applicant.last_interest_rate = latest.inputs[0].loan_int_rate
+        session.commit()
+        return True
     if applicant:
         session.delete(applicant)
         session.commit()
@@ -373,7 +425,7 @@ def get_applicant_by_cnic(session, cnic):
     """Get single applicant by CNIC."""
     return session.query(Applicant).filter(Applicant.cnic == cnic).first()
 
-def get_applicant_history(session, cnic):
+def get_applicant_history(session, cnic, user_id=None):
     """
     Get full prediction history for an applicant.
     Returns:
@@ -383,13 +435,18 @@ def get_applicant_history(session, cnic):
     if not applicant:
         return None, []
 
-    predictions = session.query(Prediction).filter(Prediction.applicant_id == applicant.id).order_by(desc(Prediction.timestamp)).all()
+    query = session.query(Prediction).filter(Prediction.applicant_id == applicant.id)
+    if user_id is not None:
+        query = query.join(PredictionOwner).filter(PredictionOwner.user_id == user_id)
+    predictions = query.order_by(desc(Prediction.timestamp), desc(Prediction.id)).all()
+    if user_id is not None and not predictions:
+        return None, []
     return applicant, predictions
 
 
 # Final pipeline function
 def save_full_prediction(session, cnic, prediction_data,
-                          input_data, explanations):
+                          input_data, explanations, user_id=None):
     """
     Save complete prediction in a single function call.
     Handles applicant + prediction + input + explanations.
@@ -402,11 +459,17 @@ def save_full_prediction(session, cnic, prediction_data,
     Returns:
         dict: applicant, prediction, input, explanations
     """
-    applicant  = get_or_create_applicant(session, cnic, prediction_data, input_data)
-    prediction = save_prediction(session, prediction_data, applicant.id)
-
-    input_record = save_input(session, prediction.id, input_data)
-    exps         = save_explanation(session, prediction.id, explanations)
+    try:
+        applicant = get_or_create_applicant(session, cnic, prediction_data, input_data, commit=False)
+        prediction = save_prediction(session, prediction_data, applicant.id, user_id=user_id, commit=False)
+        if not prediction_data.get('regression'):
+            prediction.interest_rate = input_data.get('loan_int_rate')
+        input_record = save_input(session, prediction.id, input_data, commit=False)
+        exps = save_explanation(session, prediction.id, explanations, commit=False)
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
 
     return {
         'applicant'   : applicant,

@@ -42,12 +42,12 @@ def main():
         allow_patterns=['Dockerfile', 'README.md', 'SINGLE_SPACE_GUIDE.md', '.dockerignore',
                         'start_space.py', 'download_models.py',
                         'requirements.txt', 'api/*.py', 'database/*.py',
-                        'src/*.py', 'frontend/*.py'],
+                        'src/*.py', 'frontend/*.py', 'frontend/ui/*.css'],
         # Delete only superseded deployment files, never broad repository contents.
         delete_patterns=['requirements.api.txt', 'requirements.frontend.txt',
                          'requirements.space.txt', 'requirements_frozen.txt',
                          'Dockerfile.api', 'Dockerfile.frontend'],
-        commit_message='Consolidate application requirements and Docker configuration',
+        commit_message='Add professional Streamlit frontend and private account workspaces',
     )
     print('Uploaded commit:', result.oid, flush=True)
     print('Space: https://huggingface.co/spaces/' + SPACE_ID, flush=True)
